@@ -36,12 +36,12 @@ describe("GET /hotels", () => {
   });
 
   describe("when token is valid", () => {
-    it("should respond with empty array there are no hotels created", async () => {
+    it("should respond with status 404 when user doesnt have an enrollment yet", async () => {
       const token = await generateValidToken();
 
       const response = await server.get("/hotels").set("Authorization", `Bearer ${token}`);
 
-      expect(response.body).toEqual([]);
+      expect(response.status).toEqual(httpStatus.NOT_FOUND);
     });
   });
 });
