@@ -3,7 +3,7 @@ import faker from "@faker-js/faker";
 import supertest from "supertest";
 import httpStatus from "http-status";
 import * as jwt from "jsonwebtoken";
-import { createUser } from "../factories";
+import { createUser, createEnrollmentWithAddress } from "../factories";
 import { generateValidToken } from "../helpers";
 beforeAll(async () => {
   await init();
@@ -38,6 +38,16 @@ describe("GET /hotels", () => {
   describe("when token is valid", () => {
     it("should respond with status 404 when user doesnt have an enrollment yet", async () => {
       const token = await generateValidToken();
+
+      const response = await server.get("/hotels").set("Authorization", `Bearer ${token}`);
+
+      expect(response.status).toEqual(httpStatus.NOT_FOUND);
+    });
+
+    it("should respond with status 404 when user doesnt have an ticket yet", async () => {
+      const user = await createUser();
+      const token = await generateValidToken(user);
+      await createEnrollmentWithAddress(user);  
 
       const response = await server.get("/hotels").set("Authorization", `Bearer ${token}`);
 
