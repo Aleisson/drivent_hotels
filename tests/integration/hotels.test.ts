@@ -1,12 +1,19 @@
 import app, { init } from "@/app";
 import faker from "@faker-js/faker";
+import { TicketStatus } from "@prisma/client";
 import supertest from "supertest";
 import httpStatus from "http-status";
 import * as jwt from "jsonwebtoken";
-import { createUser, createEnrollmentWithAddress } from "../factories";
-import { generateValidToken } from "../helpers";
+import { createUser, createEnrollmentWithAddress, createTicket, createTicketTypeHotels } from "../factories";
+import { cleanDb, generateValidToken } from "../helpers";
+
 beforeAll(async () => {
   await init();
+  await cleanDb();
+});
+
+beforeEach( async () => {
+  await cleanDb();
 });
 
 const server = supertest(app);
@@ -52,6 +59,31 @@ describe("GET /hotels", () => {
       const response = await server.get("/hotels").set("Authorization", `Bearer ${token}`);
 
       expect(response.status).toEqual(httpStatus.NOT_FOUND);
+    });
+
+    it("should respond with status 404 when user does have an ticket with includesHotel: false", async () => {
+      const user = await createUser();
+      const token = await generateValidToken(user);
+      const enrollment = await createEnrollmentWithAddress(user);
+      const ticketType = await createTicketTypeHotels(false);
+      await createTicket(enrollment.id, ticketType.id, TicketStatus.RESERVED);
+
+      const response = await server.get("/hotels").set("Authorization", `Bearer ${token}`);
+
+      expect(response.status).toEqual(httpStatus.NOT_FOUND);
+    });
+
+    it("should respond with status 200 when user does have an ticket with includesHotel: true and data array empty([])", async () => {
+      const user = await createUser();
+      const token = await generateValidToken(user);
+      const enrollment = await createEnrollmentWithAddress(user);
+      const ticketType = await createTicketTypeHotels(true);
+      await createTicket(enrollment.id, ticketType.id, TicketStatus.RESERVED);
+
+      const response = await server.get("/hotels").set("Authorization", `Bearer ${token}`);
+
+      expect(response.status).toEqual(httpStatus.OK);
+      expect(response.body).toEqual([]);
     });
   });
 });

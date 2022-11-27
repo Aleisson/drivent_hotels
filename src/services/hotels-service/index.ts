@@ -12,7 +12,7 @@ async function getHotels(userId: number) {
 
   const ticket = await ticketRepository.findTicketByEnrollmentId(enrollment.id);
 
-  if(ticket.TicketType.includesHotel) {
+  if(!ticket || ticket.TicketType.includesHotel === false) {
     throw notFoundError();
   }
 
