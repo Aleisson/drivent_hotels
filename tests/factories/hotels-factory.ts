@@ -11,3 +11,12 @@ export async function createTicketTypeHotels(includesHotel: boolean) {
     }
   });
 }
+export async function createHotels() {
+  return prisma.hotel.create({
+    data: {
+      name: faker.company.companyName(),
+      image: faker.image.imageUrl(),
+    }
+  });    
+}
+
