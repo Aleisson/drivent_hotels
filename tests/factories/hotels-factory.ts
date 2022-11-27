@@ -17,6 +17,16 @@ export async function createHotels() {
       name: faker.company.companyName(),
       image: faker.image.imageUrl(),
     }
-  });    
+  });
+}
+
+export async function creteRooms(hotelId: number) {
+  return prisma.room.create({
+    data: {
+      name: faker.name.findName(),
+      capacity: faker.datatype.number({ min: 1000, max: 9999 }),
+      hotelId: hotelId
+    }
+  });
 }
 
